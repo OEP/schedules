@@ -1,2 +1,13 @@
-GIT PROJECT WHOO
-CHANGE!
+CS-609 Programming Project
+
+Group members: Jason Bowman, Paul Kilgo, Houston Searcy
+
+== Problem description ==
+
+Implement a scheduler that determines whether or not a schedule is conflict
+serializable or not, and whether it is recoverable, ACA or strict.
+
+== Directory contents ==
+
+bin/mkSchedule.py -- generates a random schedule (see ./mkSchedule.py --help)
+bin/schedule.py -- library file to help with parsing and manipulating of schedules
