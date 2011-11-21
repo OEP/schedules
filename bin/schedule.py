@@ -78,14 +78,28 @@ class schedule:
   Attributes:
     ops -- the transaction operations in the schedule
   """
-  ops = [ ]
 
-  def __init__(self,strSchedule):
-    chunks = re.split('[^A-Z()0-9]+', strSchedule)
-    self.ops = list(map(str2op, chunks))
+  def __init__(self,strSchedule=None):
+    self.transactions = [ ]
+    if strSchedule != None:
+      chunks = re.split('[^A-Z()0-9]+', strSchedule)
+      self.ops = list(map(str2op, chunks))
+    else:
+      self.ops = []
+    self.syncTransactions()   
 
   def __str__(self):
     return ','.join(map(op2str,self.ops))
+
+  def addTransaction(self,n):
+    if not n in self.transactions:
+      self.transactions.append(n)
+
+  def syncTransactions(self):
+    tmp = [ x[1] for x in self.ops ]
+    for i in tmp:
+      self.addTransaction(i)
+  
 
 def main():
   scheds = ["R2(A),C1,W3(A),C3,R2(A),C2",
@@ -103,6 +117,7 @@ def main():
     try:
       tmp = schedule(s)
       print(s + " -> " + str(tmp))
+      print("Transaction list: " + str(tmp.transactions))
     except OpFormatError as e:
       print(s + ": '" + e.expr + "': " + e.msg)
 

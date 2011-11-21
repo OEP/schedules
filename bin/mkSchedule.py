@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from optparse import OptionParser
-from schedule import str2op,op2str,randomOp
+from schedule import str2op,op2str,randomOp,schedule
 import sys
 
 def makeRandomSchedule(numTransactions,numResources):
@@ -10,17 +10,18 @@ def makeRandomSchedule(numTransactions,numResources):
      op-tuples.
   """
   tset = list(map(str,map(lambda x: x+1, range(numTransactions))))
-  ops = []
+  s = schedule()
   while True:
     op = randomOp(tset,numResources)
-    ops.append(op)
+    s.ops.append(op)
 
     if op[0] == "C":
       tset.remove(op[1])
 
     if len(tset) == 0:
       break
-  return ops
+  s.syncTransactions()
+  return s
 
 def main():
   # Options declaration.
@@ -44,7 +45,7 @@ def main():
 
   for i in range(COUNT):
     sched = makeRandomSchedule(TRANSACTIONS,COUNT_RESOURCES)
-    print(','.join(map(op2str,sched)))
+    print(sched)
 
 if __name__ == "__main__":
   main()
