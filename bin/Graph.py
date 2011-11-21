@@ -6,12 +6,8 @@ from mkSchedule import makeRandomSchedule
 
 def mkGraphFromSchedule(sched):
   s = sched.ops
-  opPairs = [(x,y) for x in s for y in s if s.index(x) < s.index(y)]
+  opPairs = [(x,y) for x in s for y in s[s.index(x)+1:]]
   conflicts = list(filter(opsConflict, opPairs))
-
-#  for i in conflicts:
-#    print(op2str(i[0]) + " conflicts with " + op2str(i[1]))
-    
 
   g = Graph(sched.transactions)
   for ops in conflicts:
@@ -33,16 +29,24 @@ class Graph:
   class Vertex:
     def __init__(self, label):
       self.label = label
-      self.edges = []
+      self.edges = dict()
+      self.visited = False
 
     def __str__(self):
-      return "{" + self.label + ", " + str(self.edges) + "}"
+      return "{" + self.label + ", " + str(self.edges.keys()) + "}"
 
-    def add(self,j):
-      if not j in self.edges:
-        self.edges.append(j)
+    def add(self,j,node):
+      self.edges[j] = node
 
-	
+    def isTree(self):
+      if self.visited: return False
+      self.visited = True
+      status = True
+      for k,v in self.edges.items():
+        status = status and v.isTree()
+      self.visited = False
+      return status
+
 
   def __init__(self, labels):
     """Makes an edgeless graph with given labels"""
@@ -61,15 +65,25 @@ class Graph:
       self.vertices[label] = self.Vertex(label)
 
   def addEdge(self,i,j):
-    self.vertices[i].add(j)
+    self.vertices[i].add(j, self.vertices[j])
     return None
 
+  def isTrees(self):
+    status = True
+    for k,v in self.vertices.items():
+      status = status and v.isTree()
+    return status
 
 
 def main():
   s = makeRandomSchedule(3,1)
   print("Schedule: " + str(s))
   (conflicts, g) = mkGraphFromSchedule(s)
+  print(g)
+  if g.isTrees():
+    print("It's trees!")
+  else:
+    print("It's not trees!")
 
 
 
