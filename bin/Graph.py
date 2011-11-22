@@ -33,7 +33,7 @@ class Graph:
       self.visited = False
 
     def __str__(self):
-      return "{" + self.label + ", " + str(self.edges.keys()) + "}"
+      return "{" + self.label + " --> " + str(list(self.edges.keys())) + "}"
 
     def add(self,j,node):
       self.edges[j] = node
@@ -53,10 +53,7 @@ class Graph:
     self.initialize(labels)
 
   def __str__(self):
-    s = str()
-    for x in self.vertices.keys():
-      s = s + x + " --> " + str(self.vertices[x].edges) + "\n"
-    return str(s)
+    return str(list(map(str,self.vertices.values())))
 
   def initialize(self, labels):
     """Iterates over list of labels and adds vertices to our graph"""
