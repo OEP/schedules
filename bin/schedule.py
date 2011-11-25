@@ -82,6 +82,7 @@ class schedule:
   def __init__(self,strSchedule=None):
     self.transactions = [ ]
     if strSchedule != None:
+      strSchedule = strSchedule.strip()
       chunks = re.split('[^A-Z()0-9]+', strSchedule)
       self.ops = list(map(str2op, chunks))
     else:
