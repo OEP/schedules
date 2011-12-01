@@ -196,6 +196,42 @@ class schedule:
     (conflicts, g) = mkGraphFromSchedule(self)
     return g.isTrees()
 
+  def isRecoverable(self):
+    """Returns true if all transactions commit after all
+       the transactions whose changes they read have committed."""
+    # Keeps track of which transactions wrote to a resource.
+    dirtyMap = dict()
+
+    # Keeps track of which transaction's uncommitted reads we read.
+    uncommittedReads = dict()
+
+    for op in self.ops:
+      # A set of cardinality 1 is the loneliest set that you ever knew...
+      lonelySet = set(op[1])
+      
+      # Make empty set for not encountered resources
+      if op[2] not in dirtyMap: dirtyMap[op[2]] = set()
+
+      # Same thing for transactions
+      # Set 0 contains transaction ID's whose dirty reads
+      # Set 1 contains resources who were dirty when we read them.
+      if op[1] not in uncommittedReads: uncommittedReads[op[1]] = (set(),set())
+
+      # Dirty the resource!
+      if op[0] == "W": dirtyMap[op[2]] |= lonelySet
+      # Tally up uncommitted reads.
+      elif op[0] == "R": uncommittedReads[op[1]] &= dirtyMap[op[2]]
+      # Remove self from dirty sets and make sure this commit is recoverable
+      elif op[0] == "C":
+        for key in dirtyMap.keys():
+          dirtyMap[key] -= lonelySet
+
+        # Now check on our uncommitted reads.
+        reads = uncommittedReads[op[1]]
+        for res in reads[1]:
+          for tr in reads[0]:
+            if tr in dirtyMap: print("TODO")
+
 def main():
   scheds = ["R2(A),C1,W3(A),C3,R2(A),C2",
             "R2(A),C1,W3,C3,R2(A),C2",
