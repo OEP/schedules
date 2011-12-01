@@ -27,14 +27,13 @@ def makeRandomSchedule(numTransactions,numResources):
   s = schedule()
   while True:
     op = randomOp(tset,numResources)
-    s.ops.append(op)
+    s.addOp(op)
 
     if op[0] == "C":
       tset.remove(op[1])
 
     if len(tset) == 0:
       break
-  s.syncTransactions()
   return s
 
 def randomOp(tset,resources):
@@ -183,6 +182,10 @@ class schedule:
   def addTransaction(self,n):
     if not n in self.transactions:
       self.transactions.append(n)
+
+  def addOp(self, op):
+    self.ops.append(op)
+    self.syncTransactions()
 
   def syncTransactions(self):
     tmp = [ x[1] for x in self.ops ]
