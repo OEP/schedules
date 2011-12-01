@@ -31,8 +31,7 @@ def main():
     sched = makeRandomSchedule(TRANSACTIONS,COUNT_RESOURCES)
     print(sched)
     if options.analyze:
-      if sched.isConflictSerializable(): print("\t* Conflict serializable")
-      else: print("\t* Not conflict serializable")
+      sched.printAnalysis()
 
 if __name__ == "__main__":
   main()

@@ -51,8 +51,7 @@ def main():
       sched = schedule(line)
   
       if not tty: print(str(sched) + ":")
-      if sched.isConflictSerializable(): print("\t* Conflict serializable")
-      else : print("\t* Conflict serializable")
+      sched.printAnalysis()
 
     except OpFormatError as e:
       print(line + ": '" + e.expr + "': " + e.msg)

@@ -1,0 +1,4 @@
+R1(X) W1(X) R2(X) W3(X) C1 C2 C3
+R1(X) W1(X) R2(X) W1(X) C1 C2 C3
+R1(X) W1(X) R2(X) W1(X) C2 C1 C3
+R1(X) W1(X) R2(X) W1(X) C1 C2 C3

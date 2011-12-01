@@ -191,6 +191,12 @@ class schedule:
     tmp = [ x[1] for x in self.ops ]
     for i in tmp:
       self.addTransaction(i)
+
+  def printAnalysis(self):
+    if self.isConflictSerializable(): print("\t* Conflict serializable")
+    else: print("\t* Not conflict serializable")
+    if self.isRecoverable(): print("\t* Recoverable")
+    else: print("\t* Not recoverable")
   
   def isConflictSerializable(self):
     (conflicts, g) = mkGraphFromSchedule(self)
@@ -215,22 +221,29 @@ class schedule:
       # Same thing for transactions
       # Set 0 contains transaction ID's whose dirty reads
       # Set 1 contains resources who were dirty when we read them.
-      if op[1] not in uncommittedReads: uncommittedReads[op[1]] = (set(),set())
+      if op[1] not in uncommittedReads: uncommittedReads[op[1]] = [set(),set()]
 
       # Dirty the resource!
       if op[0] == "W": dirtyMap[op[2]] |= lonelySet
       # Tally up uncommitted reads.
-      elif op[0] == "R": uncommittedReads[op[1]] &= dirtyMap[op[2]]
+      elif op[0] == "R":
+        uncommittedReads[op[1]][0] |= dirtyMap[op[2]]
+        uncommittedReads[op[1]][1] |= set(op[2])
+
+
       # Remove self from dirty sets and make sure this commit is recoverable
       elif op[0] == "C":
         for key in dirtyMap.keys():
           dirtyMap[key] -= lonelySet
 
+
         # Now check on our uncommitted reads.
         reads = uncommittedReads[op[1]]
         for res in reads[1]:
           for tr in reads[0]:
-            if tr in dirtyMap: print("TODO")
+            if tr in dirtyMap[res]:
+              return False
+    return True
 
 def main():
   scheds = ["R2(A),C1,W3(A),C3,R2(A),C2",
