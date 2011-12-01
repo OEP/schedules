@@ -26,12 +26,9 @@ def main():
     try:
       line = line.strip()
       sched = schedule(line)
-      (conflicts, g) = mkGraphFromSchedule(sched)
   
-      if g.isTrees():
-        print(str(sched) + ": Conflict serializable")
-      else:
-        print(str(sched) + ": Not conflict serializable")
+      print(str(sched) + ":")
+      if sched.isConflictSerializable(): print("\t* Conflict serializable")
     except OpFormatError as e:
       print(line + ": '" + e.expr + "': " + e.msg)
 

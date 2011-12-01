@@ -3,18 +3,6 @@ import re
 import sys
 from random import choice, randrange
 
-class OpFormatError(Exception):
-  """Exception raised for improper op formats.
-
-  Attributes:
-    expr -- the malformed op
-    msg -- explanation of error
-  """
-
-  def __init__(self,expr,msg):
-    self.expr = expr
-    self.msg = msg
-
 def base26(num):
   """Makes a base-26 number, using the alphabet as numerals.
 
@@ -28,6 +16,25 @@ def base26(num):
   while num > 0:
     s = alphabet[num % 26] + s
     num = int(num / 26)
+  return s
+
+def makeRandomSchedule(numTransactions,numResources):
+  """Makes a truly random schedule. Only guarantees that after a commit
+     operation is done, that transaction is finished. Returns a list of
+     op-tuples.
+  """
+  tset = list(map(str,map(lambda x: x+1, range(numTransactions))))
+  s = schedule()
+  while True:
+    op = randomOp(tset,numResources)
+    s.ops.append(op)
+
+    if op[0] == "C":
+      tset.remove(op[1])
+
+    if len(tset) == 0:
+      break
+  s.syncTransactions()
   return s
 
 def randomOp(tset,resources):
@@ -72,6 +79,87 @@ def str2op(s):
     raise OpFormatError(s, "Commit operations do not take arguments.")
   return tmp
 
+def mkGraphFromSchedule(sched):
+  s = sched.ops
+  opPairs = [(x,y) for x in s for y in s[s.index(x)+1:]]
+  conflicts = list(filter(opsConflict, opPairs))
+
+  g = Graph(sched.transactions)
+  for ops in conflicts:
+    g.addEdge(ops[0][1], ops[1][1])
+  return (conflicts, g)
+
+def opsConflict(a):
+  op1 = a[0][0]
+  op2 = a[1][0]
+  t1 = a[0][1]
+  t2 = a[1][1]
+  r1 = a[0][2]
+  r2 = a[1][2]
+  return (op1 == "W" or op2 == "W") and (t1 != t2) and (r1 == r2) \
+    and (op1 != "C" and op2 != "C")
+
+class OpFormatError(Exception):
+  """Exception raised for improper op formats.
+
+  Attributes:
+    expr -- the malformed op
+    msg -- explanation of error
+  """
+
+  def __init__(self,expr,msg):
+    self.expr = expr
+    self.msg = msg
+  
+class Graph:
+
+  class Vertex:
+    def __init__(self, label):
+      self.label = label
+      self.edges = dict()
+      self.visited = False
+
+    def __str__(self):
+      return "{" + self.label + " --> " + str(list(self.edges.keys())) + "}"
+
+    def add(self,j,node):
+      self.edges[j] = node
+
+    def isTree(self):
+      if self.visited: return False
+      self.visited = True
+      status = True
+      for k,v in self.edges.items():
+        status = status and v.isTree()
+      self.visited = False
+      return status
+
+
+  def __init__(self, labels):
+    """Makes an edgeless graph with given labels"""
+    self.initialize(labels)
+
+  def __str__(self):
+    return str(list(map(str,self.vertices.values())))
+
+  def initialize(self, labels):
+    """Iterates over list of labels and adds vertices to our graph"""
+    self.vertices = dict()
+    for label in labels:
+      self.vertices[label] = self.Vertex(label)
+
+  def addEdge(self,i,j):
+    self.vertices[i].add(j, self.vertices[j])
+    return None
+
+  def isTrees(self):
+    status = True
+    for k,v in self.vertices.items():
+      status = status and v.isTree()
+      if status == False: break
+    return status
+
+
 class schedule:
   """Represents a transaction schedule.
 
@@ -101,6 +189,9 @@ class schedule:
     for i in tmp:
       self.addTransaction(i)
   
+  def isConflictSerializable(self):
+    (conflicts, g) = mkGraphFromSchedule(self)
+    return g.isTrees()
 
 def main():
   scheds = ["R2(A),C1,W3(A),C3,R2(A),C2",
@@ -118,7 +209,8 @@ def main():
     try:
       tmp = schedule(s)
       print(s + " -> " + str(tmp))
-      print("Transaction list: " + str(tmp.transactions))
+      if tmp.isConflictSerializable(): print("Conflict serializable!")
+      else: print("Not conflict serializable!")
     except OpFormatError as e:
       print(s + ": '" + e.expr + "': " + e.msg)
 

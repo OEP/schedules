@@ -1,27 +1,9 @@
 #!/usr/bin/env python3
 
-from optparse import OptionParser
-from schedule import str2op,op2str,randomOp,schedule
 import sys
+from optparse import OptionParser
+from schedule import makeRandomSchedule
 
-def makeRandomSchedule(numTransactions,numResources):
-  """Makes a truly random schedule. Only guarantees that after a commit
-     operation is done, that transaction is finished. Returns a list of
-     op-tuples.
-  """
-  tset = list(map(str,map(lambda x: x+1, range(numTransactions))))
-  s = schedule()
-  while True:
-    op = randomOp(tset,numResources)
-    s.ops.append(op)
-
-    if op[0] == "C":
-      tset.remove(op[1])
-
-    if len(tset) == 0:
-      break
-  s.syncTransactions()
-  return s
 
 def main():
   # Options declaration.
