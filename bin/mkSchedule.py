@@ -14,6 +14,8 @@ def main():
     help="Number of transactions in a schedule [default: %default]") 
   parser.add_option("-r", type="int", dest="resources", default=1,
     help="Number of resources in a schedule [default: %default]")
+  parser.add_option("-a", action="store_true", dest="analyze",
+    help="Analyze each generated schedule [default: %default]")
 
   (options,args) = parser.parse_args(sys.argv);
 
@@ -28,6 +30,9 @@ def main():
   for i in range(COUNT):
     sched = makeRandomSchedule(TRANSACTIONS,COUNT_RESOURCES)
     print(sched)
+    if options.analyze:
+      if sched.isConflictSerializable(): print("\t* Conflict serializable")
+      else: print("\t* Not conflict serializable")
 
 if __name__ == "__main__":
   main()
