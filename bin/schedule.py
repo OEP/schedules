@@ -197,6 +197,8 @@ class schedule:
     else: print("\t* Not conflict serializable")
     if self.isRecoverable(): print("\t* Recoverable")
     else: print("\t* Not recoverable")
+    if self.isCascadeless(): print("\t* ACA")
+    else: print("\t* Not ACA")
   
   def isConflictSerializable(self):
     (conflicts, g) = mkGraphFromSchedule(self)
@@ -243,6 +245,33 @@ class schedule:
           for tr in reads[0]:
             if tr in dirtyMap[res]:
               return False
+    return True
+
+  def isCascadeless(self):
+    """Returns true if no transactions read uncommitted resources.
+       Also known as ACA."""
+    # Keeps track of which transactions wrote to a resource.
+    dirtyMap = dict()
+
+    for op in self.ops:
+      # A set of cardinality 1 is the loneliest set that you ever knew...
+      lonelySet = set(op[1])
+      
+      # Make empty set for not encountered resources
+      if op[2] not in dirtyMap: dirtyMap[op[2]] = set()
+
+      # Dirty the resource!
+      if op[0] == "W": dirtyMap[op[2]] |= lonelySet
+      # Tally up uncommitted reads.
+      elif op[0] == "R":
+        ignore = 1 if op[1] in dirtyMap[op[2]] else 0
+        if len(dirtyMap[op[2]]) - ignore > 0:
+          return False
+
+      # Remove self from dirty sets and make sure this commit is recoverable
+      elif op[0] == "C":
+        for key in dirtyMap.keys():
+          dirtyMap[key] -= lonelySet
     return True
 
 def main():
