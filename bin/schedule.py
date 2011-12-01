@@ -230,7 +230,7 @@ class schedule:
       # Tally up uncommitted reads.
       elif op[0] == "R":
         uncommittedReads[op[1]][0] |= dirtyMap[op[2]]
-        uncommittedReads[op[1]][1] |= set(op[2])
+        uncommittedReads[op[1]][1] |= set([op[2]])
 
 
       # Remove self from dirty sets and make sure this commit is recoverable
