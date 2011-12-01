@@ -3,10 +3,12 @@
 from optparse import OptionParser
 from schedule import schedule
 from schedule import OpFormatError
-from Graph import mkGraphFromSchedule
 import sys
-import Graph
 
+def prompt(flag):
+  if flag:
+    print(">", end=" ")
+    sys.stdout.flush()
 
 def main():
   # Options declaration.
@@ -21,18 +23,41 @@ def main():
     parser.print_help()
     sys.exit(2)
 
-  line = thing.readline()
-  while line:
+  # Print happy things if there's a user on the other side!
+  tty = thing.isatty()
+
+  if tty:
+    print("* CS 609 Project")
+    print("* Fall 2011")
+    print("* Jason Bowman, Paul Kilgo, Houston Searcy")
+    print("------------------------------------------")
+    print("Type a schedule at the prompt. If it is\n",
+          "well-formed, the analysis will be\n",
+          "printed below. This script accepts a\n",
+          "syntax similar to the one used in class.\n",
+          "EXAMPLE: R1(X) W2(X) W1(X) C1 C2\n\n",
+          "CTRL-D to Exit.")
+    print("------------------------------------------")
+
+  prompt(tty)
+
+  for line in thing:
     try:
+      if line.strip() == "":
+        prompt(tty)
+        continue
+
       line = line.strip()
       sched = schedule(line)
   
-      print(str(sched) + ":")
+      if not tty: print(str(sched) + ":")
       if sched.isConflictSerializable(): print("\t* Conflict serializable")
+      else : print("\t* Conflict serializable")
+
     except OpFormatError as e:
       print(line + ": '" + e.expr + "': " + e.msg)
 
-    line = thing.readline()
+    prompt(tty)
 
 if __name__ == "__main__":
   main()
