@@ -4,6 +4,7 @@ from optparse import OptionParser
 from schedule import schedule
 from schedule import OpFormatError
 import sys
+import re
 
 def prompt(flag):
   if flag:
@@ -43,14 +44,22 @@ def main():
 
   for line in thing:
     try:
+      ## Chomp off any comments.
+      orig = line.strip()
+      line = re.split('#+',line)[0];
+
+
       if line.strip() == "":
+        if not tty: print(orig)
         prompt(tty)
         continue
 
       line = line.strip()
       sched = schedule(line)
+
+      if not tty:
+        print(orig)
   
-      if not tty: print(str(sched) + ":")
       sched.printAnalysis()
 
     except OpFormatError as e:
