@@ -196,15 +196,21 @@ class schedule:
     for i in tmp:
       self.addTransaction(i)
 
-  def printAnalysis(self):
-    if self.isConflictSerializable(): print("\t* Conflict serializable")
+  def printAnalysis(self, csz=None, rec=None, aca=None, stc=None):
+    if csz==None: csz = self.isConflictSerializable()
+    if rec==None: rec = self.isRecoverable()
+    if aca==None: aca = self.isCascadeless()
+    if stc==None: stc = self.isStrict()
+
+    if csz: print("\t* Conflict serializable")
     else: print("\t* Not conflict serializable")
-    if self.isRecoverable(): print("\t* Recoverable")
+    if rec: print("\t* Recoverable")
     else: print("\t* Not recoverable")
-    if self.isCascadeless(): print("\t* ACA")
+    if aca: print("\t* ACA")
     else: print("\t* Not ACA")
-    if self.isStrict(): print("\t* Strict")
+    if stc: print("\t* Strict")
     else: print("\t* Not strict")
+    return (csz,rec,aca,stc)
   
   def isConflictSerializable(self):
     (conflicts, g) = mkGraphFromSchedule(self)
