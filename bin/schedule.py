@@ -79,9 +79,7 @@ def str2op(s):
   return tmp
 
 def mkGraphFromSchedule(sched):
-  s = sched.ops
-  opPairs = [(x,y) for x in s for y in s[s.index(x)+1:]]
-  conflicts = list(filter(opsConflict, opPairs))
+  conflicts = sched.getConflicts()
 
   g = Graph(sched.transactions)
   for ops in conflicts:
@@ -187,6 +185,12 @@ class schedule:
     self.ops.append(op)
     self.syncTransactions()
 
+  def getConflicts(self):
+    return list(filter(
+          opsConflict,
+          [(x,y) for x in self.ops for y in self.ops[self.ops.index(x)+1:]]
+    ))
+
   def syncTransactions(self):
     tmp = [ x[1] for x in self.ops ]
     for i in tmp:
@@ -199,6 +203,8 @@ class schedule:
     else: print("\t* Not recoverable")
     if self.isCascadeless(): print("\t* ACA")
     else: print("\t* Not ACA")
+    if self.isStrict(): print("\t* Strict")
+    else: print("\t* Not strict")
   
   def isConflictSerializable(self):
     (conflicts, g) = mkGraphFromSchedule(self)
@@ -273,6 +279,20 @@ class schedule:
         for key in dirtyMap.keys():
           dirtyMap[key] -= lonelySet
     return True
+
+  def isStrict(self):
+    conflicts = self.getConflicts()
+    commitSet = set()
+    for op in self.ops:
+      if op[0] == "C":
+        for conflict in conflicts:
+          # Make sure that, for each conflict where the current transaction
+          # is in the RHS that the transaction on the LHS has committed.
+          if conflict[1][1] == op[1] and conflict[0][1] not in commitSet:
+            return False
+        commitSet |= set([ op[1] ])
+    return True
+    
 
 def main():
   scheds = ["R2(A),C1,W3(A),C3,R2(A),C2",
