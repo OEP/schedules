@@ -186,10 +186,12 @@ class schedule:
     self.syncTransactions()
 
   def getConflicts(self):
-    return list(filter(
-          opsConflict,
-          [(x,y) for x in self.ops for y in self.ops[self.ops.index(x)+1:]]
-    ))
+    conflicts = []
+    for i in range(len(self.ops)):
+      for j in range(i+1, len(self.ops)):
+        conflicts.append((self.ops[i],self.ops[j],(i,j)))
+
+    return list(filter(opsConflict, conflicts))
 
   def syncTransactions(self):
     tmp = [ x[1] for x in self.ops ]
@@ -288,17 +290,19 @@ class schedule:
 
   def isStrict(self):
     conflicts = self.getConflicts()
-    commitSet = set()
-    for op in self.ops:
-      if op[0] == "C":
-        for conflict in conflicts:
-          # Make sure that, for each conflict where the current transaction
-          # is in the RHS that the transaction on the LHS has committed.
-          if conflict[1][1] == op[1] and conflict[0][1] not in commitSet:
-            return False
-        commitSet |= set([ op[1] ])
-    return True
     
+    # We're only interested in the conflics where the LHS is a write()
+    conflicts = filter(lambda x: x[0][0] == "W", conflicts)
+
+    for conflict in conflicts:
+      target = conflict[0][1]
+      (i,j) = conflict[2]
+      subset = self.ops[i:j]
+      result = list(filter(lambda x: x[0] == "C" and x[1] == target,subset))
+      if len(result) == 0:
+        return False
+
+    return True
 
 def main():
   scheds = ["R2(A),C1,W3(A),C3,R2(A),C2",
