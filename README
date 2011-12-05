@@ -11,3 +11,12 @@ serializable or not, and whether it is recoverable, ACA or strict.
 
 bin/mkSchedule.py -- generates a random schedule (see ./mkSchedule.py --help)
 bin/schedule.py -- library file to help with parsing and manipulating of schedules
+bin/analyze.py -- interactive script which you can either type or provide a file as an argument to interpret
+
+== Usage examples ==
+
+## Analyze 5 randomly generated schedules.
+$> bin/mkSchedule.py -a -n 5
+
+## Interpret test/allTypes.txt
+$> bin/analyze.py test/allTypes.txt
