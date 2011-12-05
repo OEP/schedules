@@ -1,0 +1,4 @@
+R1, C1
+W1, C1
+R1(X), W1(X), C1(X)
+READ(X), WRITE(X), COMMIT
