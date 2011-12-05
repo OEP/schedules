@@ -229,7 +229,7 @@ class schedule:
 
     for op in self.ops:
       # A set of cardinality 1 is the loneliest set that you ever knew...
-      lonelySet = set(op[1])
+      lonelySet = set([op[1]])
       
       # Make empty set for not encountered resources
       if op[2] not in dirtyMap: dirtyMap[op[2]] = set()
@@ -269,7 +269,7 @@ class schedule:
 
     for op in self.ops:
       # A set of cardinality 1 is the loneliest set that you ever knew...
-      lonelySet = set(op[1])
+      lonelySet = set([op[1]])
       
       # Make empty set for not encountered resources
       if op[2] not in dirtyMap: dirtyMap[op[2]] = set()
